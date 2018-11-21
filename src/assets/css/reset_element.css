@@ -1,0 +1,10 @@
+.el-button,
+.el-input__inner {
+  border-radius: 0;
+}
+.el-button {
+  padding: 12px 28px;
+}
+.el-upload-dragger {
+  width: 280px;
+}
