@@ -9,32 +9,34 @@
     <div class="content">
       <div class="preview">
         <div class="sub_wrapper">
-          <div class="pic_style" :style="{transform: `scale(${scale / 100})`}" ref="coverImg">
-            <img :src="url" alt="cover-img" class="cover-img" @load="getImgData">
-            <div
-              v-for="(item, sub) in 3"
-              :key="sub"
-              v-show="info.title[sub].text"
-              ref="textBox"
-              @mouseup="handlemouseup(sub, $event)"
-              @mousedown="handlemousedown(sub, $event)"
-              @mousemove="handlemousemove(sub, $event)"
-              :style="{
-                left: `${info.title[sub].left}px`,
-                top: `${info.title[sub].top}px`,
-                zIndex: info.title[sub].zIndex,
-                fontSize: `${info.title[sub].fontSize}px`,
-                fontFamily: info.title[sub].fontFamily,
-                color: info.title[sub].color,
-                opacity: info.title[sub].opacity / 100,
-                transform: `rotate(${info.title[sub].rotate}deg)`,
-                fontStyle: info.title[sub].fontStyle,
-                fontWeight: info.title[sub].fontWeight,
-                textDecoration: info.title[sub].textDecoration,
-                textAlign: info.title[sub].textAlign,
-                letterSpacing: `${info.title[sub].letterSpacing}px`,
-              }">
-              {{info.title[sub].text}}
+          <div class="pic_style_wrapper" ref="coverImg">
+            <div class="pic_style" :style="{transform: `scale(${scale / 100})`}">
+              <img :src="url" alt="cover-img" class="cover-img" @load="getImgData">
+              <div
+                v-for="(item, sub) in 3"
+                :key="sub"
+                v-show="info.title[sub].text"
+                ref="textBox"
+                @mouseup="handlemouseup(sub, $event)"
+                @mousedown="handlemousedown(sub, $event)"
+                @mousemove="handlemousemove(sub, $event)"
+                :style="{
+                  left: `${info.title[sub].left}px`,
+                  top: `${info.title[sub].top}px`,
+                  zIndex: info.title[sub].zIndex,
+                  fontSize: `${info.title[sub].fontSize}px`,
+                  fontFamily: info.title[sub].fontFamily,
+                  color: info.title[sub].color,
+                  opacity: info.title[sub].opacity / 100,
+                  transform: `rotate(${info.title[sub].rotate}deg)`,
+                  fontStyle: info.title[sub].fontStyle,
+                  fontWeight: info.title[sub].fontWeight,
+                  textDecoration: info.title[sub].textDecoration,
+                  textAlign: info.title[sub].textAlign,
+                  letterSpacing: `${info.title[sub].letterSpacing}px`,
+                }">
+                {{info.title[sub].text}}
+              </div>
             </div>
           </div>
           <div class="operation">
@@ -327,10 +329,33 @@ export default {
   },
   created() {
     this.info.userid = this.$route.query.userid;
-    this.url = this.info.img= this.$route.query.url;
-    this.info.title.forEach(item => {    
-      this.reset.push({...item});
-    });
+    this.url = this.info.img = this.$route.query.url;
+    if (this.$route.query.index !== undefined) {
+      this.info = this.$store.state.imgInfo;
+      this.info.title.push({
+        text: "",
+        fontFamily: "Arial",
+        color: "#FFFFFF",
+        fontSize: 20,
+        opacity: 100,
+        rotate: 0,
+        fontStyle: "normal",
+        fontWeight: "normal",
+        textDecoration: "none",
+        textAlign: "center",
+        letterSpacing: 0,
+        left: "",
+        top: 50,
+        zIndex: 3
+      });
+      this.$store.state.imgInfo.title.forEach(item => {
+        this.reset.push({...item});
+      });
+    } else {
+      this.info.title.forEach(item => {
+        this.reset.push({...item});
+      });
+    }
   },
   mounted() {
     const {userid, code, verifycode, return_code} = this.$route.query;
@@ -345,7 +370,7 @@ export default {
         this.info = res.list[0];
         this.previewList = res.list;
       }).catch(err => {
-        alert(err);
+        alert('网络错误，请稍后重试');
       });
     };
   },
@@ -381,7 +406,7 @@ export default {
           }
         });
       }).catch(err => {
-        alert(err);
+        alert('网络错误，请稍后重试');
       });
     },
     rewrite() {
@@ -583,35 +608,40 @@ export default {
           display: inherit;
           justify-content: flex-start;
           align-items: flex-start;
-          .pic_style {
-            position: relative;
-            overflow: hidden;
-            .cover-img {
-              max-width: 700px;
-              max-height: 700px;
-            }
-            & > div {
-              width: 400px;
-              height: 50px;
-              padding: 0 15px;
-              box-sizing: border-box;
-              border: 1px dashed transparent;
-              line-height: 1;
-              position: absolute;
-              left: 0;
-              top: 0;
-              z-index: 1;
-              font-size: 20px;
-              color: #fff;
-              text-align: center;
-              line-height: 50px;
+          .pic_style_wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .pic_style {
+              position: relative;
               overflow: hidden;
-              cursor: move;
-              will-change: left, top, transform, z-index, opacity, font-family,
-                text-align, font-size, color, text-decoration, letter-spacing,
-                font-weight, font-style;
-              &:hover {
-                border: 1px dashed #fff;
+              .cover-img {
+                max-width: 700px;
+                max-height: 700px;
+              }
+              & > div {
+                width: 400px; 
+                height: 50px;
+                padding: 0 15px;
+                box-sizing: border-box;
+                border: 1px dashed transparent;
+                line-height: 1;
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: 1;
+                font-size: 20px;
+                color: #fff;
+                text-align: center;
+                line-height: 50px;
+                overflow: hidden;
+                cursor: move;
+                will-change: left, top, transform, z-index, opacity, font-family,
+                  text-align, font-size, color, text-decoration, letter-spacing,
+                  font-weight, font-style;
+                &:hover {
+                  border: 1px dashed #fff;
+                }
               }
             }
           }

@@ -1,17 +1,38 @@
 <template>
-  <div class="container">
+  <div class="container" v-loading="loading" element-loading-text="拼命加载中">
     <Header></Header>
+    <div class="chooseImg">
+      <div class="style">
+        <span class="style_label">曲风：</span>
+        <span :class="['style_item', sing.tag === item ? 'current_item' : '']" v-for="(item, index) in styleList" :key="index" @click="chooseStyle(item)">{{item}}</span>
+      </div>
+      <div class="size">
+        <span class="size_label">尺寸：</span>
+        <span :class="['size_item', size === index ? 'current_item' : '']" v-for="(item, index) in sizeList" :key="index"  @click="chooseSize(index)">{{item}}</span>
+      </div>
+      <div class="input_name_singer">
+        <span class="name">歌曲名称：</span>
+        <input class="input_name" type="text" v-model="sing.song_name">
+        <span class="singer">歌手：</span>
+        <input class="input_singer" type="text" v-model="sing.singer_name">
+        <span class="generateImg" @click="generateImg">生成海报</span>
+      </div>
+    </div>
     <div class="content">
-      <div class="column" v-for="(items, column) in 5" :key="column">
-        <div class="box" v-for="(item, index) in list" :key="index" v-if="(index - column) % 5 === 0" @mouseover="setIndex(index)" @mouseout="removeIndex">
-          <img class="cover" :src="item" alt="cover-img">
+      <div class="content_wrapper" v-if="list.length > 0">
+        <div class="box" v-for="(item, index) in list" :key="index" @mouseover="setIndex(index)" @mouseout="removeIndex">
+          <img class="cover" :src="item.url" alt="cover-img">
           <transition name="fade">
             <div class="hover-box" v-if="index === hoverIndex">
-              <div class="edit" @click="toEdit(item)">在线编辑</div>
-              <a class="download" :href="item" download="photo">立即下载</a>
+              <div class="edit" @click="toEdit(item.img, index)">在线编辑</div>
+              <a class="download" :href="item.url" download="photo">立即下载</a>
             </div>
           </transition>
         </div>
+      </div>
+      
+      <div class="content_wrapper" v-else>
+        <div class="box" v-for="(item, index) in 8" :key="index"></div>
       </div>
     </div>
   </div>
@@ -23,37 +44,86 @@ import { api, setHeader } from "@/assets/js/api";
 export default {
   data() {
     return {
-      start: 0,
+      loading: false,
+      size: -1,
       list: [],
       hoverIndex: -1,
+      styleList: ['流行', '摇滚', '民谣', '电子', '说唱', '轻音乐', '爵士', '乡村', 'R&B/soul', '古典', '民族', '英伦', '金属'],
+      sizeList: ['300x300px', '400x400px', '500x500px'],
+      sing: {
+        tag: '',
+        width: '',
+        height: '',
+        userid: '',
+        song_name: '',
+        singer_name: '',
+      },
     }
   },
   created() {
-    this.getData();
-  },
-  mounted() {
-    window.addEventListener('scroll', this.scrollBottom);
-  },
-  destroyed() {
-    window.removeEventListener('scroll', this.scrollBottom);
+    const {userid, verifycode} = this.$route.query;
+    this.sing.userid = userid;
+    setHeader(verifycode);
   },
   components: {
     Header
   },
   methods: {
-    // 加载更多
-    scrollBottom() {
-      function getScrollTop () {
-        return document.documentElement.scrollTop || document.body.scrollTop;
-      };
-      if (document.documentElement.clientHeight + getScrollTop() >= document.body.clientHeight && getScrollTop() > 0) {
-        this.start += 1;
-        this.getData();
-      };
+    generateImg() {
+      if (this.sing.tag === '') {
+        this.$message({
+          message: '请选择曲风',
+          type: 'warning'
+        });
+      } else if (this.size < 0) {
+        this.$message({
+          message: '请选中尺寸',
+          type: 'warning'
+        });
+      } else if (!this.sing.song_name) {
+        this.$message({
+          message: '请填写歌曲名称',
+          type: 'warning'
+        });
+      } else if (!this.sing.singer_name) {
+        this.$message({
+          message: '请填写歌手',
+          type: 'warning'
+        });
+      } else {
+        this.loading = true;
+        api({url: '/cp/newAddImages', data: this.sing}).then(res => {
+          this.list = res.list;
+        }).catch(err => {
+          this.$message({
+            message: '网络错误，请稍后重试',
+            type: 'warning',
+          });
+        }).finally(() => {
+          this.loading = false;
+        });
+      }
     },
-    toEdit(e) {
-      // window.open();
-      this.$router.push(`/edit?url=${e}&userid=${this.$route.query.userid}`);
+    chooseStyle(item) {
+      if (this.sing.tag !== item) {
+        this.sing.tag = item;
+      }
+    },
+    chooseSize(index) {
+      if (this.size !== index) {
+        this.size = index;
+        if (index === 0) {
+          this.sing.width = this.sing.height = 300;
+        } else if (index === 1) {
+          this.sing.width = this.sing.height = 400;
+        } else {
+          this.sing.width = this.sing.height = 500;
+        }
+      }
+    },
+    toEdit(img, index) {
+      this.$store.commit('setImgInfo', this.list[index]);
+      this.$router.push(`/edit?url=${img}&userid=${this.$route.query.userid}&index=${index}`);
     },
     removeIndex() {
       this.hoverIndex = -1;
@@ -62,15 +132,13 @@ export default {
       this.hoverIndex = e;
     },
     getData() {
-      const {userid, verifycode} = this.$route.query;
-      setHeader(verifycode);
       api({
         url: '/cp/findImages',
-        data: {
+        params: {
           start: this.start,
           userid
         },
-        form: true
+        method: 'get',
       }).then(res => {
         this.list = this.list.concat(res.list);
       }).catch(message => {
@@ -87,25 +155,94 @@ export default {
   .container {
     min-height: 100vh;
     background-color: #f5f8fa;
+    .chooseImg {
+      background-color: #fff;
+      padding: 90px 0 20px 100px;
+      .style {
+        .style_label {
+          color: #777;
+          font-size: 14px;
+          margin-right: 15px;
+        }
+        .style_item {
+          color: #333;
+          cursor: pointer;
+          font-size: 14px;
+          margin-right: 35px;
+        }
+        .current_item {
+          color: #e91d01;
+        }
+      }
+      .size {
+        margin-top: 20px;
+        .size_label {
+          color: #777;
+          font-size: 14px;
+          margin-right: 15px;
+        }
+        .size_item {
+          color: #333;
+          cursor: pointer;
+          font-size: 14px;
+          margin-right: 35px;
+        }
+        .current_item {
+          color: #e91d01;
+        }
+      }
+      .input_name_singer {
+        display: flex;
+        margin-top: 20px;
+        align-items: center;
+        justify-content: flex-start;
+        .name, .singer {
+          color: #777;
+          font-size: 14px;
+          margin-right: 15px;
+        }
+        .input_name, .input_singer {
+          width: 200px;
+          height: 30px;
+          color: #333;
+          outline: none;
+          font-size: 14px;
+          padding: 0 15px;
+          margin-right: 30px;
+          box-sizing: border-box;
+          border: 1px solid #ececec;
+        }
+        .generateImg {
+          width: 100px;
+          height: 30px;
+          color: #fff;
+          font-size: 14px;
+          line-height: 30px;
+          text-align: center;
+          background: #e91d01;
+          cursor: pointer;
+        }
+      }
+    }
     .content {
       width: 1500px;
       margin: 0 auto;
-      padding-top: 90px;
+      padding-top: 25px;
       box-sizing: border-box;
-      display: flex;
-      justify-content: flex-start;
-      align-items: flex-start;
-      .column {
-        width: 280px;
+      .content_wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
         .box {
-          width: 280px;
-          min-height: 140px;
-          max-height: 450px;
-          margin-bottom: 25px;
+          width: 340px;
           overflow: hidden;
+          min-height: 340px;
           border-radius: 4px;
-          box-shadow: 0 2px 4px 0 rgba(152, 152, 152, .5);
           position: relative;
+          margin-bottom: 25px;
+          box-shadow: 0 2px 4px 0 rgba(152, 152, 152, .5);
+          background: url('./icon/554f63040df677a5741417a86d90678.png') center / cover;
           .cover {
             width: 100%;
           }
@@ -137,9 +274,6 @@ export default {
             }
           }
         }
-      }
-      .column+.column {
-        margin-left: 25px;
       }
     }
     .download-popup {

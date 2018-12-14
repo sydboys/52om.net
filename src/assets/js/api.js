@@ -10,12 +10,13 @@ export function setHeader(token) {
 }
 
 
-export function api({url, data, form = false, method = 'post', onlyStatus = true}) {
+export function api({url, data, form = false, method = 'post', onlyStatus = true, params = {}}) {
   return new Promise ((resolve, reject) => {
     https({
       url,
       method,
       data,
+      params,
       transformRequest: [function (data, headers) {
         let req = '';
         if (form) {

@@ -6,15 +6,16 @@ module.exports = {
   dev: {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {
-      '/https': {
-        target: 'http://coveradmin.52om.net/',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/https': ''
-        }
-      },
-    },
+    // proxyTable: {
+    //   '/https': {
+    //     target: 'http://cover.52om.net/',
+    //     // target: 'http://119.23.13.69:5051/',
+    //     changeOrigin: true,
+    //     pathRewrite: {
+    //       '^/https': ''
+    //     }
+    //   },
+    // },
     host: 'localhost',
     port: 80,
     autoOpenBrowser: true,
@@ -31,7 +32,7 @@ module.exports = {
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    productionSourceMap: true,
+    productionSourceMap: false,
     devtool: '#source-map',
     productionGzip: false,
     productionGzipExtensions: ['js', 'css'],
