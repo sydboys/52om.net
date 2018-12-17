@@ -93,7 +93,7 @@
                 <div class="label">大小</div>
 
                 <div class="font_size">
-                  <el-slider :disabled="lock[index]" v-model="info.title[index].fontSize" :max="40"></el-slider>
+                  <el-slider :disabled="lock[index]" v-model="info.title[index].fontSize" :max="50"></el-slider>
                 </div>
 
                 <div class="font_size_value">{{info.title[index].fontSize}}</div>
@@ -195,12 +195,24 @@
           <i class="el-icon-circle-close-outline close" @click="previewList = []"></i>
           <div class="create_img" v-for="(item, sub) in previewList" :key="sub" :style="{backgroundImage: `url('${item.url}')`}" @mouseover="setIndex(sub)" @mouseout="removeIndex">
             <div v-if="sub === hoverIndex">
-              <a :href="item.url" download="photo">立即下载</a>
+              <div @click="saveIndex(sub)">立即下载</div>
             </div>
           </div>
         </div>
       </div>
     </transition>
+    <!-- 选择尺寸 -->
+    <el-dialog title="选择尺寸" :visible.sync="chooseSize">
+      <div>
+        <el-radio v-model="size" :label="400" border>400*400px</el-radio>
+        <el-radio v-model="size" :label="500" border>500*500px</el-radio>
+        <el-radio v-model="size" :label="600" border>600*600px</el-radio>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="chooseSize = false">取 消</el-button>
+        <el-button type="primary" @click="download()">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -210,6 +222,9 @@ import {api, setHeader} from "@/assets/js/api";
 export default {
   data() {
     return {
+      size: 400,
+      imgIndex: 0,
+      chooseSize: false,
       url: null,
       img: null,
       scale: 100,
@@ -327,6 +342,14 @@ export default {
   components: {
     Header
   },
+  watch: {
+    chooseSize(newval) {
+      if (!newval) {
+        this.imgIndex = 0;
+        this.size = 400;
+      }
+    }
+  },
   created() {
     this.info.userid = this.$route.query.userid;
     this.url = this.info.img = this.$route.query.url;
@@ -375,6 +398,23 @@ export default {
     };
   },
   methods: {
+    saveIndex(index) {
+      this.imgIndex = index;
+      this.chooseSize = true;
+    },
+    download() {
+      const data = {
+        url: this.previewList[this.imgIndex].url,
+        width: this.size,
+        height: this.size,
+      };
+      api({url: '/cp/dowloadImgas', data, form: true}).then(res => {
+        this.chooseSize = false;
+        this.downloadFn(res.msg);
+      }).catch(err => {
+        this.$message.error('网络错误，请稍后重试');
+      });
+    },
     removeIndex() {
       this.hoverIndex = -1;
     },
@@ -883,7 +923,7 @@ export default {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 2002;
+      z-index: 500;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -920,7 +960,7 @@ export default {
             display: flex;
             justify-content: center;
             align-items: center;
-            a {
+            div {
               width: 180px;
               height: 46px;
               background: linear-gradient(135deg, rgba(255, 84, 84, 1), rgba(255, 111, 131, 1), rgba(255, 125, 156, 1));

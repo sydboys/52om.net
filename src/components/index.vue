@@ -6,10 +6,6 @@
         <span class="style_label">曲风：</span>
         <span :class="['style_item', sing.tag === item ? 'current_item' : '']" v-for="(item, index) in styleList" :key="index" @click="chooseStyle(item)">{{item}}</span>
       </div>
-      <div class="size">
-        <span class="size_label">尺寸：</span>
-        <span :class="['size_item', size === index ? 'current_item' : '']" v-for="(item, index) in sizeList" :key="index"  @click="chooseSize(index)">{{item}}</span>
-      </div>
       <div class="input_name_singer">
         <span class="name">歌曲名称：</span>
         <input class="input_name" type="text" v-model="sing.song_name">
@@ -45,15 +41,11 @@ export default {
   data() {
     return {
       loading: false,
-      size: -1,
       list: [],
       hoverIndex: -1,
       styleList: ['流行', '摇滚', '民谣', '电子', '说唱', '轻音乐', '爵士', '乡村', 'R&B/soul', '古典', '民族', '英伦', '金属'],
-      sizeList: ['300x300px', '400x400px', '500x500px'],
       sing: {
         tag: '',
-        width: '',
-        height: '',
         userid: '',
         song_name: '',
         singer_name: '',
@@ -73,11 +65,6 @@ export default {
       if (this.sing.tag === '') {
         this.$message({
           message: '请选择曲风',
-          type: 'warning'
-        });
-      } else if (this.size < 0) {
-        this.$message({
-          message: '请选中尺寸',
           type: 'warning'
         });
       } else if (!this.sing.song_name) {
@@ -107,18 +94,6 @@ export default {
     chooseStyle(item) {
       if (this.sing.tag !== item) {
         this.sing.tag = item;
-      }
-    },
-    chooseSize(index) {
-      if (this.size !== index) {
-        this.size = index;
-        if (index === 0) {
-          this.sing.width = this.sing.height = 300;
-        } else if (index === 1) {
-          this.sing.width = this.sing.height = 400;
-        } else {
-          this.sing.width = this.sing.height = 500;
-        }
       }
     },
     toEdit(img, index) {
@@ -165,23 +140,6 @@ export default {
           margin-right: 15px;
         }
         .style_item {
-          color: #333;
-          cursor: pointer;
-          font-size: 14px;
-          margin-right: 35px;
-        }
-        .current_item {
-          color: #e91d01;
-        }
-      }
-      .size {
-        margin-top: 20px;
-        .size_label {
-          color: #777;
-          font-size: 14px;
-          margin-right: 15px;
-        }
-        .size_item {
           color: #333;
           cursor: pointer;
           font-size: 14px;

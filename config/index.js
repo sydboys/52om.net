@@ -8,7 +8,7 @@ module.exports = {
     assetsPublicPath: '/',
     // proxyTable: {
     //   '/https': {
-    //     target: 'http://cover.52om.net/',
+    //     target: 'http://cover.52om.net/https',
     //     // target: 'http://119.23.13.69:5051/',
     //     changeOrigin: true,
     //     pathRewrite: {
