@@ -20,6 +20,7 @@
                 @mouseup="handlemouseup(sub, $event)"
                 @mousedown="handlemousedown(sub, $event)"
                 @mousemove="handlemousemove(sub, $event)"
+                @click="changeIndex(sub)"
                 :style="{
                   left: `${info.title[sub].left}px`,
                   top: `${info.title[sub].top}px`,
@@ -93,7 +94,7 @@
                 <div class="label">大小</div>
 
                 <div class="font_size">
-                  <el-slider :disabled="lock[index]" v-model="info.title[index].fontSize" :max="50"></el-slider>
+                  <el-slider :disabled="lock[index]" v-model="info.title[index].fontSize" :max="90"></el-slider>
                 </div>
 
                 <div class="font_size_value">{{info.title[index].fontSize}}</div>
@@ -661,7 +662,7 @@ export default {
               }
               & > div {
                 width: 400px; 
-                height: 50px;
+                height: 90px;
                 padding: 0 15px;
                 box-sizing: border-box;
                 border: 1px dashed transparent;
@@ -673,7 +674,7 @@ export default {
                 font-size: 20px;
                 color: #fff;
                 text-align: center;
-                line-height: 50px;
+                line-height: 90px;
                 overflow: hidden;
                 cursor: move;
                 will-change: left, top, transform, z-index, opacity, font-family,
