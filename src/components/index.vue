@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="content">
-      <div class="content_wrapper" v-if="list.length > 0">
+      <div class="content_wrapper my_wrapper" v-if="list.length > 0">
         <div class="box" v-for="(item, index) in list" :key="index" @mouseover="setIndex(index)" @mouseout="removeIndex">
           <img class="cover" :src="item.url" alt="cover-img">
           <transition name="fade">
@@ -231,6 +231,15 @@ export default {
               margin-bottom: 20px;
             }
           }
+        }
+      }
+      .my_wrapper {
+        justify-content: flex-start;
+        .box {
+          margin-left: 46px;
+        }
+        &>div:nth-child(1), &>div:nth-child(5) {
+          margin-left: 0;
         }
       }
     }
